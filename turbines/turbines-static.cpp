@@ -1,5 +1,5 @@
 // turbines.cpp : Defines the entry point for the console application.
-// Added to GIT on 8/27
+// Added to GIT on 8/27. Repo is in OneDrive-BU
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
