@@ -43,9 +43,6 @@ void create_thread_args();			// thread & m,n position for each thread
 power compute_grid_avg();
 void display_grid_and_avg();
 
-float get_power_val(power* gridptr, int r, int c); // ptr points to the array we want to use
-//void set_power_val(power& gridptr, int a, int b, float val);
-
 	// data
 int M, N; float T; int row_width_int, row_width_args;
 int eofile = 0;
@@ -72,13 +69,6 @@ pthread_cond_t  latch;    /* condition for mainloop to wait on & threads to sign
 pthread_mutex_t mainloop_mutex;     /* mutex for the above */
 pthread_cond_t  a_thread_is_waiting; /* condition variable to signal
 							 * when each thread starts waiting */
-
-
-
-pthread_cond_t cycle_starting = PTHREAD_COND_INITIALIZER; // initialized before broadcast. Used by threads
-//pthread_cond_t cycle_started= PTHREAD_COND_INITIALIZER; // used by completion counter
-//sem_t latch; // set by completion counter
-//pthread_mutex_t tlock=PTHREAD_MUTEX_INITIALIZER; // used internally by threads
 
 /* ------------------------------------------------------
 remaining problems:
@@ -169,14 +159,7 @@ void* mainloop(void*)
 			running=0; printf("End of File detected\n");
 		}
 		printf("power req for this cycle is: %f\n", cycle_target); // show we got it right
-		/*sem_wait(&latch); // wait until all threads are done with the previous cycle
-		// MUST re-initialize for next cycle
-		sem_init(&latch, 0, 0); // now it's OK to reset the latch counter
-		pthread_cond_destroy(&cycle_starting);		// MUST destroy before re-init
-		pthread_cond_init(&cycle_starting,NULL);			// re-initialize the cond_var for threads
-		//cycle_starting = PTHREAD_COND_INITIALIZER;	// re-init the cond var for threads
-		pthread_cond_signal(&cycle_started);		//re-init cond var for "latch setting code"
-		*/
+		
 		printf("waiting=%i active=%i\n", waitingThreads, activeThreads);
 		pthread_mutex_lock(&mainloop_mutex);
 		while (waitingThreads < activeThreads) 
@@ -286,16 +269,11 @@ void* turbine_n(void* x) // this is the function that becomes a thread (M*N time
 	printf("thread %i, %i started\n", m, n);
 	
 	while (!eofile)
-		// main will signal the condition (cycle_starting) and every thread must test it before it can begin
+		// mainloop will signal the condition (cycle_starting) and every thread must test it before it can begin
 	{
 		printf("thread %i, %i waiting on condvar\n", m, n);
 		// If the mutex is already locked, the calling thread blocks until the mutex becomes available. 
-		/*pthread_mutex_lock(&tlock);	// must lock around the test
-		while (!cycle_starting)	//mainloop must have just awakened
-		// the wait will unlock the condvar to unblock other threads who can try to start
-		pthread_cond_wait(&cycle_starting, &tlock);
-		pthread_mutex_unlock(&tlock);	// release OWNERSHIP of the mutex, so another thread can lock it
-		*/
+		
 		/* When the threads should wait, do this (they wait for 'readyFlag' to be
 		* set, but also adjust the waiting thread count so the main thread can
 		* determine whether to broadcast) */
@@ -424,17 +402,4 @@ void array_test() // kept for future use (in other programs)
 	for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 4; j++)
 			printf("arr[%i,%i]=%i,%i\n", i, j, (*(arr + i * c + j)).m, (*(arr + i * c + j)).n);
-}
-
-
-
-float get_power_val(power* arr, int r, int c) // ptr points to the array we want to use
-
-{
-	return (arr[r * row_width_int + c]);
-}
-void set_power_val(power(*gridptr)[], int a, int b, float val);
-void set_power_val(power(*arr)[], int i, int j, float val) // usable for maxc AND current power arrays
-{
-	(*arr)[i * row_width_int + j] = val;
 }
