@@ -1,0 +1,1 @@
+# Turbines is an assignment for an undergraduate course in operating systems. The assignment requires use of multi-threading, semaphores, mutexes and condition variables. The assignment is based on the concept of a "wind-turbine farm". This assignment was used successfully for several semesters at Binghamton University when I taught the course.
